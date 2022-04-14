@@ -1,0 +1,16 @@
+# whoami-tls.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: app-tls
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`example.com`)
+      services:
+        - name: app-v1
+          port: 80
+  tls: # This route uses TLS
+    certResolver: le # Uses our certificate resolver to get a certificate automatically!
