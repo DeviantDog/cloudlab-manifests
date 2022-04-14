@@ -1,0 +1,46 @@
+---
+additionalArguments:
+  - --entrypoints.websecure.http.tls.domains[0].main=example.com
+  - --entrypoints.websecure.http.tls.domains[0].sans=*.example.com
+  - --certificatesResolvers.le.acme.dnsChallenge=true
+  - --certificatesResolvers.le.acme.dnsChallenge.provider=cloudflare
+  - --certificatesresolvers.le.acme.email=youremail@cloudflare.com
+  - --certificatesresolvers.le.acme.storage=/data/acme.json
+
+ports:
+  web:
+    redirectTo: websecure
+
+env:
+  - name: CF_API_EMAIL
+    value: youremail@cloudflare.com
+  - name: CF_API_KEY
+    value: <Your Global Cloudflare API Key>
+
+ingressRoute:
+  dashboard:
+    enabled: true
+
+persistence:
+  enabled: true
+  path: /data
+
+deployment:
+  initContainers:
+    # The "volume-permissions" init container is required if you run into permission issues.
+    # Related issue: https://github.com/traefik/traefik/issues/6972
+    - name: volume-permissions
+      image: busybox:1.31.1
+      command: ["sh", "-c", "chmod -Rv 600 /data/*"]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+
+securityContext:
+  readOnlyRootFilesystem: false
+  runAsGroup: 0
+  runAsUser: 0
+  runAsNonRoot: false
+
+podSecurityContext:
+  fsGroup: null
